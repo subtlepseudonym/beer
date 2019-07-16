@@ -22,7 +22,7 @@ class FlowMeter():
         self.totalPour = 0.0
 
     def update(self, now):
-        print("delta ", eventDelta)
+        eventDelta = max((now - self.lastEvent), 1)
 
         if eventDelta < DELTA_THRESHOLD:
             hz = MS_PER_SECOND / eventDelta # ms_per_second / ms_since_last_event
