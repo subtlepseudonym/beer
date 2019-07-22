@@ -1,5 +1,7 @@
 {
 	"totalEvents": 0,
+	"totalPourEvents": 0,
+	"totalPourTime": 0.0,
 	"totalFreq": 0.0,
 	"totalFlow": 0.0,
 	"totalPour": 0.0,
