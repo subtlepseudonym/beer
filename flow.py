@@ -82,13 +82,24 @@ class FlowMeter:
         flowMeter.update(now)
 
 
-flowMeter = FlowMeter('./state.json')
+flowMeter = FlowMeter('./initial-state.json')
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(FLOW_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.add_event_detect(FLOW_PIN, GPIO.RISING, callback=flowMeter.flowEvent, bouncetime=20)
 
+saveThreshold = 5
+saveCount = 0
 while True:
     print("state:", json.dumps(flowMeter.toJSON()))
     print("avg:", json.dumps(flowMeter.getStats()))
+
+    saveCount += 1
+    if saveCount >= saveThreshold:
+        with open('./state.json', 'w') as f:
+            f.truncate()
+            json.dump(flowMeter.toJSON(), f)
+        saveCount = 0
+
     time.sleep(1)
+
