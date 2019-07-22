@@ -1,3 +1,4 @@
+import os.path
 import time
 import json
 import RPi.GPIO as GPIO
@@ -14,25 +15,33 @@ GAL_PER_LITER = 0.2641720523581484
 
 current_milli_time = lambda: int(time.time() * MS_PER_SECOND)
 
-class FlowMeter():
-    events = 0
+class FlowMeter:
+    totalEvents = 0
     lastEvent = 0 # in milliseconds
     totalFreq = 0.0 # in 1/ms
     totalFlow = 0.0 # in liters per second
     totalPour = 0.0 # in liters
+    remainingVolume = 0 # will be initialized by json file
 
-    def __init__(self):
-        self.events = 0
+    def __init__(self, filepath):
+        if not os.path.isfile(filepath):
+            raise ValueError('File "%s" not found' % filepath)
+
+        with open(filepath) as f:
+            data = json.load(f)
+            self.totalEvents = data['totalEvents']
+            self.totalFreq = data['totalFreq']
+            self.totalFlow = data['totalFlow']
+            self.totalPour = data['totalPour']
+            self.remainingVolume = data['remainingVolume']
+
         self.lastEvent = current_milli_time()
-        self.totalFreq = 0.0
-        self.totalFlow = 0.0
-        self.totalPour = 0.0
 
     def update(self, now):
         eventDelta = max((now - self.lastEvent), 1)
 
         if eventDelta < DELTA_THRESHOLD:
-            self.events += 1
+            self.totalEvents += 1
 
             hz = MS_PER_SECOND / eventDelta # ms_per_second / ms_since_last_event
             self.totalFreq += hz
@@ -50,7 +59,7 @@ class FlowMeter():
         flowMeter.update(now)
 
 
-flowMeter = FlowMeter()
+flowMeter = FlowMeter('./state.json')
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(FLOW_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
