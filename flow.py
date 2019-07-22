@@ -52,7 +52,7 @@ class FlowMeter:
     def getStats(self):
         return { 'avgFreq': self.totalFreq / self.totalEvents if self.totalEvents else 0,
                  'avgFlow': self.totalFlow / self.totalEvents if self.totalEvents else 0,
-                 'avgPour': self.totalPourEvents / self.totalEvents if self.totalEvents else 0 }
+                 'avgPour': self.totalPour / self.totalPourEvents if self.totalPourEvents else 0 }
 
     def update(self, now):
         eventDelta = max((now - self.lastEvent), 1)
@@ -90,5 +90,5 @@ GPIO.add_event_detect(FLOW_PIN, GPIO.RISING, callback=flowMeter.flowEvent, bounc
 
 while True:
     print("state:", json.dumps(flowMeter.toJSON()))
-    print("stats:", json.dumps(flowMeter.getStats()))
+    print("avg:", json.dumps(flowMeter.getStats()))
     time.sleep(1)
