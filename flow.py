@@ -63,7 +63,7 @@ class FlowMeter:
             hz = MS_PER_SECOND / eventDelta # ms_per_second / ms_since_last_event
             self.totalFreq += hz
 
-            flow = hz / (SECONDS_PER_MINUTE * 21) # frequency / (seconds_per_minute * flow_meter_constant)
+            flow = hz / (SECONDS_PER_MINUTE * 10.5) # frequency / (seconds_per_minute * flow_meter_constant)
             self.totalFlow += flow
 
             pourTime = eventDelta / MS_PER_SECOND
