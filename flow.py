@@ -16,96 +16,96 @@ GAL_PER_LITER = 0.2641720523581484
 current_milli_time = lambda: int(time.time() * MS_PER_SECOND)
 
 class FlowMeter:
-    totalEvents = 0
-    lastEvent = 0 # in milliseconds
-    totalPourEvents = 0
-    totalPourTime = 0.0 # in milliseconds
-    totalFreq = 0.0 # in 1 / seconds
-    totalFlow = 0.0 # in liters per second
-    totalPour = 0.0 # in liters
-    remainingVolume = 0 # will be initialized by json file
-    flow_constant = 0
+    flow_constant = 0 # scalar
+    total_events = 0 # scalar
+    total_pour_events = 0 # scalar
+    last_event = 0 # milliseconds
+    total_pour_time = 0.0 # milliseconds
+    total_frequency = 0.0 # 1 / seconds
+    total_flow_rate = 0.0 # liters / seconds
+    total_pour = 0.0 # liters
+    remaining_volume = 0 # liters
 
-    def __init__(self, filepath, flow_constant=10.5):
+    def __init__(self, filepath, flow_constant=THREE_EIGHTHS_CONSTANT):
         if not os.path.isfile(filepath):
             raise ValueError('File "%s" not found' % filepath)
 
         with open(filepath) as f:
             data = json.load(f)
-            self.totalEvents = data['totalEvents']
-            self.totalPourTime = data['totalPourTime']
-            self.totalFreq = data['totalFreq']
-            self.totalFlow = data['totalFlow']
-            self.totalPour = data['totalPour']
-            self.remainingVolume = data['remainingVolume']
+            self.total_events = data['totalEvents']
+            self.total_pour_time = data['totalPourTime']
+            self.total_frequency = data['totalFrequency']
+            self.total_flow_rate = data['totalFlowRate']
+            self.total_pour = data['totalPour']
+            self.remaining_volume = data['remainingVolume']
 
-        self.lastEvent = current_milli_time()
+        self.last_event = current_milli_time()
         self.flow_constant = flow_constant
 
-    def toJSON(self):
-        return { 'totalEvents': self.totalEvents,
-                 'totalPourEvents': self.totalPourEvents,
-                 'totalPourTime': self.totalPourTime,
-                 'totalFreq': self.totalFreq,
-                 'totalFlow': self.totalFlow,
-                 'totalPour': self.totalPour,
-                 'remainingVolume': self.remainingVolume,
+    def to_json(self):
+        return { 'totalEvents': self.total_events,
+                 'totalPourEvents': self.total_pour_events,
+                 'totalPourTime': self.total_pour_time,
+                 'totalFrequency': self.total_frequency,
+                 'totalFlowRate': self.total_flow_rate,
+                 'totalPour': self.total_pour,
+                 'remainingVolume': self.remaining_volume,
                  'flowConstant': self.flow_constant }
 
-    def getStats(self):
-        return { 'avgFreq': self.totalFreq / self.totalEvents if self.totalEvents else 0,
-                 'avgFlow': self.totalFlow / self.totalEvents if self.totalEvents else 0,
-                 'avgPour': self.totalPour / self.totalPourEvents if self.totalPourEvents else 0,
-                 'totalPour': self.totalPour,
-                 'totalPourTime': self.totalPourTime,
-                 'totalPourEvents': self.totalPourEvents }
+    def stats(self):
+        return { 'avgFreq': self.total_frequency / self.total_events if self.total_events else 0,
+                 'avgFlow': self.total_flow_rate / self.total_events if self.total_events else 0,
+                 'avgPour': self.total_pour / self.total_pour_events if self.total_pour_events else 0,
+                 'totalPour': self.total_pour,
+                 'totalPourTime': self.total_pour_time,
+                 'totalPourEvents': self.total_pour_events }
 
     def update(self, now):
-        eventDelta = max((now - self.lastEvent), 1)
+        event_delta = max((now - self.last_event), 1)
 
-        if eventDelta < DELTA_THRESHOLD:
-            self.totalEvents += 1
+        if event_delta < DELTA_THRESHOLD:
+            self.total_events += 1
 
-            hz = MS_PER_SECOND / eventDelta # ms_per_second / ms_since_last_event
-            self.totalFreq += hz
+            frequency = MS_PER_SECOND / event_delta # ms_per_second / ms_since_last_event
+            self.total_frequency += frequency
 
-            flow = hz / (SECONDS_PER_MINUTE * self.flow_constant) # frequency / (seconds_per_minute * flow_meter_constant)
-            self.totalFlow += flow
+            flow_rate = frequency / (SECONDS_PER_MINUTE * self.flow_constant) # frequency / (seconds_per_minute * flow_meter_constant)
+            self.total_flow_rate += flow_rate
 
-            pourTime = eventDelta / MS_PER_SECOND
-            self.totalPourTime += pourTime
+            pour_time = event_delta / MS_PER_SECOND
+            self.total_pour_time += pour_time
 
-            pour = flow * pourTime # in liters
-            self.totalPour += pour # pour is (1/1260)L per event
-            self.remainingVolume -= pour
+            pour = flow_rate * pour_time # in liters
+            self.total_pour += pour # pour is (1/1260)L per event
+            self.remaining_volume -= pour
         else:
-            self.totalPourEvents += 1
+            self.total_pour_events += 1
 
-        self.lastEvent = now
+        self.last_event = now
 
-    def flowEvent(self, channel):
+    def event(self, channel):
         now = current_milli_time()
-        flowMeter.update(now)
+        self.update(now)
 
 
-flowMeter = FlowMeter('./initial-state.json')
+flow_meter = FlowMeter('./initial-state.json', 10.5) # constant of 10.5 works better during testing
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(FLOW_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.add_event_detect(FLOW_PIN, GPIO.RISING, callback=flowMeter.flowEvent, bouncetime=20)
+GPIO.add_event_detect(FLOW_PIN, GPIO.RISING, callback=flow_meter.event, bouncetime=20)
 
-saveThreshold = 5
-saveCount = 0
+save_interval = 5
+save_counter = 0
 while True:
-    print("state:", json.dumps(flowMeter.toJSON()))
-    print("avg:", json.dumps(flowMeter.getStats()))
+    print("state:", json.dumps(flow_meter.to_json()))
+    print("avg:", json.dumps(flow_meter.stats()))
 
-    saveCount += 1
-    if saveCount >= saveThreshold:
+    save_counter += 1
+    if save_counter >= save_interval:
         with open('./state.json', 'w') as f:
             f.truncate()
-            json.dump(flowMeter.toJSON(), f)
-        saveCount = 0
+            json.dump(flow_meter.to_json(), f)
+        save_counter = 0
 
     time.sleep(1)
 
