@@ -52,7 +52,10 @@ class FlowMeter:
     def getStats(self):
         return { 'avgFreq': self.totalFreq / self.totalEvents if self.totalEvents else 0,
                  'avgFlow': self.totalFlow / self.totalEvents if self.totalEvents else 0,
-                 'avgPour': self.totalPour / self.totalPourEvents if self.totalPourEvents else 0 }
+                 'avgPour': self.totalPour / self.totalPourEvents if self.totalPourEvents else 0,
+                 'totalPour': self.totalPour,
+                 'totalPourTime': self.totalPourTime,
+                 'totalPourEvents': self.totalPourEvents }
 
     def update(self, now):
         eventDelta = max((now - self.lastEvent), 1)
