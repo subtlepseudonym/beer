@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 FLOW_PIN = 14
 DELTA_THRESHOLD = 1000 # in milliseconds
 THREE_EIGHTHS_CONSTANT = 21 # flow constant determined by manufacturer
-ONE_FOURTH_CONSTANT = 38
+ONE_FOURTH_CONSTANT = 23
 
 MS_PER_SECOND = 1000
 SECONDS_PER_MINUTE = 60
