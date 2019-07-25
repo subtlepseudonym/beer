@@ -24,8 +24,9 @@ class FlowMeter:
     totalFlow = 0.0 # in liters per second
     totalPour = 0.0 # in liters
     remainingVolume = 0 # will be initialized by json file
+    flow_constant = 0
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, flow_constant=10.5):
         if not os.path.isfile(filepath):
             raise ValueError('File "%s" not found' % filepath)
 
@@ -39,6 +40,7 @@ class FlowMeter:
             self.remainingVolume = data['remainingVolume']
 
         self.lastEvent = current_milli_time()
+        self.flow_constant = flow_constant
 
     def toJSON(self):
         return { 'totalEvents': self.totalEvents,
@@ -47,7 +49,8 @@ class FlowMeter:
                  'totalFreq': self.totalFreq,
                  'totalFlow': self.totalFlow,
                  'totalPour': self.totalPour,
-                 'remainingVolume': self.remainingVolume }
+                 'remainingVolume': self.remainingVolume,
+                 'flowConstant': self.flow_constant }
 
     def getStats(self):
         return { 'avgFreq': self.totalFreq / self.totalEvents if self.totalEvents else 0,
@@ -66,7 +69,7 @@ class FlowMeter:
             hz = MS_PER_SECOND / eventDelta # ms_per_second / ms_since_last_event
             self.totalFreq += hz
 
-            flow = hz / (SECONDS_PER_MINUTE * 10.5) # frequency / (seconds_per_minute * flow_meter_constant)
+            flow = hz / (SECONDS_PER_MINUTE * self.flow_constant) # frequency / (seconds_per_minute * flow_meter_constant)
             self.totalFlow += flow
 
             pourTime = eventDelta / MS_PER_SECOND
