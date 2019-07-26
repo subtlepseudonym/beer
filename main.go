@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -35,15 +36,16 @@ type FlowMeter struct {
 func NewFlowMeter(filePath string, flowConstant float64) *FlowMeter {
 	// TODO: read initial state from json file
 
-	flowMeter := &FlowMeter{}
+	flowMeter := &FlowMeter{
+		deltaThreshold:  defaultDeltaThreshold,
+		flowConstant:    defaultFlowConstant,
+		TotalPourEvents: -1,
+	}
 
 	if flowConstant > 0 {
 		flowMeter.flowConstant = flowConstant
-	} else {
-		flowMeter.flowConstant = defaultFlowConstant
 	}
 
-	flowMeter.deltaThreshold = defaultDeltaThreshold
 	return flowMeter
 }
 
@@ -61,7 +63,6 @@ func (f *FlowMeter) Attach(pin uint8) error {
 	if err != nil {
 		return errors.Wrapf(err, "watch pin %d failed", pin)
 	}
-	fmt.Println(err)
 
 	return nil
 }
@@ -116,12 +117,12 @@ func main() {
 	signal.Notify(quit, os.Interrupt, os.Kill)
 	defer signal.Stop(quit)
 
-	fmt.Println("listening...")
+	fmt.Println(`{"msg":"listening..."}`)
 	for {
 		select {
 		case <-time.After(time.Second):
-			fmt.Printf("%+v\n", meter)
-			fmt.Println()
+			b, _ := json.Marshal(meter)
+			fmt.Printf("%s\n", b)
 		case <-time.After(time.Minute):
 		case <-quit:
 			return
