@@ -6,29 +6,29 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/warthog618/gpio"
 	"github.com/pkg/errors"
+	"github.com/warthog618/gpio"
 )
 
 const (
 	defaultDeltaThreshold = time.Second
-	defaultFlowConstant = 23 // 1 / liters
+	defaultFlowConstant   = 23 // 1 / liters
 )
 
 type FlowMeter struct {
 	deltaThreshold time.Duration
-	flowConstant float64 // scalar
-	pin *gpio.Pin
+	flowConstant   float64 // scalar
+	pin            *gpio.Pin
 
-	latestEvent time.Time
+	latestEvent    time.Time
 	totalFrequency float64 // 1 / seconds
-	totalFlowRate float64 // liters / seconds
+	totalFlowRate  float64 // liters / seconds
 	// TODO: convert these to math/big.Float
 
-	TotalEvents int // scalar
+	TotalEvents     int // scalar
 	TotalPourEvents int // scalar
-	TotalPourTime time.Duration
-	TotalPour float64 // liters
+	TotalPourTime   time.Duration
+	TotalPour       float64 // liters
 	RemainingVolume float64 // liters
 }
 
