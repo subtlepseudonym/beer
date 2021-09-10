@@ -156,6 +156,7 @@ func main() {
 	defer meter.Detach()
 
 	stop := meter.Start()
+	defer close(stop)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, os.Kill)
@@ -167,7 +168,6 @@ func main() {
 			fmt.Printf("Events: % 5d; Pours: % 2d; Volume: % 2.4f\n", meter.eventTotal, len(meter.Pours), meter.TotalFlow())
 		case <-time.After(time.Minute):
 		case <-quit:
-			stop <- struct{}{}
 			return
 		}
 	}
