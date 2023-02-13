@@ -12,12 +12,15 @@ import (
 
 const (
 	defaultDeltaThreshold = time.Second // used to separate pour events
-	defaultGPIOPin        = 14          // pins are zero-index, so this is pin 15
+	defaultGPIOPin        = 14
 )
 
 const (
-	FlowConstantGR301 = 21 // flow constant of the Gredia GR-301, in (1 / liters)
+	// flow constant (K) in (1 / liter)
+	FlowConstantGR301 = 21  // Gredia GR-301
+	FlowConstantUXCELL = 76 // uxcell a18041200ux0151
 
+	// volume in liters
 	VolumeCorny   = 18.93 // cornelius
 	VolumeSixtel  = 19.55 // sixth-barrel
 	VolumeQuarter = 29.34 // pony
@@ -149,7 +152,7 @@ func main() {
 	defer gpio.Close()
 
 	meter := NewFlow(FlowConstantGR301, VolumeSixtel)
-	err = meter.Attach(14)
+	err = meter.Attach(defaultGPIOPin)
 	if err != nil {
 		panic(err)
 	}
