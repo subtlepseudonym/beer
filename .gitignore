@@ -1,2 +1,3 @@
 /vendor
-beer
+/bin
+state.json
