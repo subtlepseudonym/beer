@@ -1,7 +1,12 @@
 ## Beer
+
+[![github](https://img.shields.io/github/v/tag/subtlepseudonym/kegerator?logo=github&sort=semver)](https://github.com/subtlepseudonym/kegerator/tags) [![docker_pulls](https://img.shields.io/docker/pulls/subtlepseudonym/kegerator?label=pulls&logo=docker)](https://hub.docker.com/r/subtlepseudonym/kegerator) [![kofi](https://img.shields.io/badge/ko--fi-Support%20me%20-hotpink?logo=kofi&logoColor=white)](https://ko-fi.com/subtlepseudonym)
+
 This project utilizes a raspberry pi zero w and a flow meter to monitor keg levels 
 
 ### Dependency modifications
+This is a list of dependency modifications to help this project run a bit better. Relevant entries will be removed if the project moves to vendored dependencies.
+
 - github.com/d2r2/go-dht
 	- logger.go: logging level changed to Error
 	- gpio.h: uncommented sleep between /sys/class/gpio/export write and /sys/class/gpio/gpioX/direction write
