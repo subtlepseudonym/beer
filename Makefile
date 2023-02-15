@@ -14,7 +14,7 @@ build: format
 	docker buildx build -f Dockerfile.build -o type=local,dest=./bin .
 
 build-local: format
-	go build -o beer -v main.go
+	go build -o beer -v *.go
 
 test:
 	gotest --race ./...

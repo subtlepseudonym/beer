@@ -30,7 +30,7 @@ COPY . .
 RUN --mount=type=cache,target=/root/cache \
 	#--mount=type=cache,target=/go/pkg/mod,ro \
 	mkdir -p $BIN_DIR && \
-	go build -mod vendor -o $BIN_DIR/beer -v main.go
+	go build -mod vendor -o $BIN_DIR/beer -v *.go
 
 
 FROM scratch
