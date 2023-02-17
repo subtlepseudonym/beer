@@ -1,20 +1,19 @@
 BINARY=kegerator
-
-BUILD=$$(vtag)
-
-REVISION=`git rev-list -n1 HEAD`
-BUILDTAGS=
-LDFLAGS=--ldflags "-X main.Version=${BUILD} -X main.Revision=${REVISION}"
+BUILD=$$(vtag --no-meta)
+TAG="subtlepseudonym/${BINARY}:${BUILD}"
 
 default: all
 
 all: test build
 
 build: format
-	docker buildx build -f Dockerfile.build -o type=local,dest=./bin .
+	docker buildx build -f Dockerfile -o type=local,dest=./bin/kegerator .
 
 build-local: format
 	go build -o kegerator -v *.go
+
+docker: format
+	docker build --network=host --tag ${TAG} -f Dockerfile .
 
 test:
 	gotest --race ./...
