@@ -152,7 +152,10 @@ func SaveStateToFile(filename string, state *State) error {
 		return fmt.Errorf("open state file: %w", err)
 	}
 	defer f.Close()
-	err = json.NewEncoder(f).Encode(state)
+
+	encoder := json.NewEncoder(f)
+	encoder.SetIndent("", "  ")
+	err = encoder.Encode(state)
 	if err != nil {
 		return fmt.Errorf("encode state file: %w", err)
 	}
