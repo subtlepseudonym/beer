@@ -16,7 +16,11 @@ const (
 	defaultDHTReadInterval  = 10 * time.Second
 )
 
+// These values are used for writing to and from file
 var (
+	dhtModels map[string]dht.SensorType = map[string]dht.SensorType{
+		"dht22": dht.DHT22,
+	}
 	dhtIndex map[dht.SensorType]string = map[dht.SensorType]string{
 		dht.DHT22: "dht22",
 	}

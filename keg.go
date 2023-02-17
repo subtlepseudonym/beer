@@ -5,6 +5,8 @@ type Keg struct {
 	Volume float64 `json:"volume"`
 }
 
+// These values are here for reference, but are not actually used
+// Actual Volume values are loaded from file
 var (
 	KegCorny = Keg{ // cornelius
 		Type:   "corny",

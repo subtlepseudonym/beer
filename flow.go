@@ -18,22 +18,23 @@ type FlowMeter struct {
 	FlowConstant float64 `json:"flow_constant"`
 }
 
+// These values are here for reference, but are not actually used
+// Actual FlowConstant values are loaded from file
 var (
+	// digiten fl-s401a
 	FlowMeterFLS401A = FlowMeter{
-		// digiten fl-s401a
 		Model:        "fl-s401a",
 		FlowConstant: 98,
 	}
+	// gredia gr-301
 	FlowMeterGR301 = FlowMeter{
-		// gredia gr-301
 		Model:        "gr-301",
 		FlowConstant: 21,
 	}
+	// uxcell a18041200ux0151
 	FlowMeterUX0151 = FlowMeter{
-		// uxcell a18041200ux0151
-		Model: "ux0151",
-		//FlowConstant: 76,
-		FlowConstant: 61.5,
+		Model:        "ux0151",
+		FlowConstant: 76,
 	}
 )
 
@@ -161,10 +162,9 @@ func (f *Flow) Keg() *Keg {
 	return f.keg
 }
 
-// SensorModel returns the string representation of the flow meter sensor
-// model
-func (f *Flow) SensorModel() string {
-	return f.sensor.Model
+// Sensor returns a struct containing flow meter model and flow constant
+func (f *Flow) Sensor() *FlowMeter {
+	return f.sensor
 }
 
 // Pin returns the pin number that the flow meter is attached to

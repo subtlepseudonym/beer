@@ -6,8 +6,6 @@ import (
 	"math"
 	"os"
 	"sync"
-
-	dhtlib "github.com/d2r2/go-dht"
 )
 
 // State maintains the current state of kegs and DHT sensors in the fridge
@@ -35,7 +33,7 @@ func (s *State) update() {
 		kegState := KegState{
 			Keg:      keg.keg,
 			Contents: keg.Contents,
-			Sensor:   keg.SensorModel(),
+			Sensor:   keg.Sensor(),
 			Pin:      keg.Pin(),
 			Poured:   keg.TotalFlow(),
 			Pours:    pours,
@@ -62,12 +60,12 @@ func (s *State) update() {
 }
 
 type KegState struct {
-	Keg      *Keg      `json:"keg"`
-	Contents string    `json:"contents"`
-	Sensor   string    `json:"sensor"`
-	Pin      int       `json:"pin"`
-	Poured   float64   `json:"poured"`
-	Pours    []float64 `json:"pours,omitempty"`
+	Keg      *Keg       `json:"keg"`
+	Sensor   *FlowMeter `json:"sensor"`
+	Contents string     `json:"contents"`
+	Pin      int        `json:"pin"`
+	Poured   float64    `json:"poured"`
+	Pours    []float64  `json:"pours,omitempty"`
 }
 
 type DHTState struct {
@@ -76,24 +74,6 @@ type DHTState struct {
 	Temperature float32 `json:"temperature,omitempty"`
 	Humidity    float32 `json:"humidity,omitempty"`
 }
-
-var (
-	// FIXME: using state.json as a key map is lazy
-	kegSizes map[string]*Keg = map[string]*Keg{
-		"corny":       &KegCorny,
-		"sixtel":      &KegSixtel,
-		"quarter":     &KegQuarter,
-		"half-barrel": &KegHalf,
-	}
-	flowSensors map[string]*FlowMeter = map[string]*FlowMeter{
-		"fl-s401a": &FlowMeterFLS401A,
-		"gr-301":   &FlowMeterGR301,
-		"ux0151":   &FlowMeterUX0151,
-	}
-	dhtModels map[string]dhtlib.SensorType = map[string]dhtlib.SensorType{
-		"dht22": dhtlib.DHT22,
-	}
-)
 
 func LoadStateFromFile(filename string) (*State, error) {
 	var state State
@@ -108,16 +88,7 @@ func LoadStateFromFile(filename string) (*State, error) {
 	}
 
 	for _, keg := range state.Kegs {
-		kegSize, ok := kegSizes[keg.Keg.Type]
-		if !ok {
-			return nil, fmt.Errorf("invalid keg type %q", keg.Keg.Type)
-		}
-		flowSensor, ok := flowSensors[keg.Sensor]
-		if !ok {
-			return nil, fmt.Errorf("invalid flow sensor type %q", keg.Sensor)
-		}
-
-		flow := NewFlow(flowSensor, kegSize, keg.Contents)
+		flow := NewFlow(keg.Sensor, keg.Keg, keg.Contents)
 		flow.eventTotal = int(math.Ceil(keg.Poured / flow.flowPerEvent))
 		err = flow.Attach(uint8(keg.Pin % math.MaxUint8))
 		if err != nil {
