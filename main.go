@@ -62,23 +62,23 @@ func main() {
 	}()
 
 	go func() {
-		saveTimer := time.NewTimer(defaultSaveInterval) // save state every 5 minutes
+		saveTicker := time.NewTicker(defaultSaveInterval) // save state every 5 minutes
 		if noAutosave {
-			saveTimer.Stop()
+			saveTicker.Stop()
 		}
 		reload := make(chan os.Signal, 1) // reload state from file on sighup
 		signal.Notify(reload, syscall.SIGHUP)
 
 		for {
 			select {
-			case <-saveTimer.C:
+			case <-saveTicker.C:
 				err = SaveStateToFile(stateFile, state)
 				if err != nil {
 					fmt.Println("ERR: save state file:", err)
 				}
 			case <-reload:
 				// stop existing state
-				saveTimer.Stop()
+				saveTicker.Stop()
 				for _, keg := range state.kegs {
 					keg.Stop()
 				}
@@ -104,7 +104,7 @@ func main() {
 				state = s
 				state.mu.Unlock()
 				if !noAutosave {
-					saveTimer.Reset(defaultSaveInterval)
+					saveTicker.Reset(defaultSaveInterval)
 				}
 			case <-stop:
 				// stop running kegs and dhts on exit
