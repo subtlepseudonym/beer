@@ -61,7 +61,7 @@ func main() {
 
 	go func() {
 		saveTimer := time.NewTimer(defaultSaveInterval) // save state every 5 minutes
-		reload := make(chan os.Signal, 1) // reload state from file on sighup
+		reload := make(chan os.Signal, 1)               // reload state from file on sighup
 		signal.Notify(reload, syscall.SIGHUP)
 
 		for {

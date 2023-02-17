@@ -1,4 +1,4 @@
-BINARY=beer
+BINARY=kegerator
 
 BUILD=$$(vtag)
 
@@ -14,7 +14,7 @@ build: format
 	docker buildx build -f Dockerfile.build -o type=local,dest=./bin .
 
 build-local: format
-	go build -o beer -v *.go
+	go build -o kegerator -v *.go
 
 test:
 	gotest --race ./...
