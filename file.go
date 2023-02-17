@@ -78,6 +78,7 @@ type DHTState struct {
 }
 
 var (
+	// FIXME: using state.json as a key map is lazy
 	kegSizes map[string]*Keg = map[string]*Keg{
 		"corny":       &KegCorny,
 		"sixtel":      &KegSixtel,
@@ -85,8 +86,9 @@ var (
 		"half-barrel": &KegHalf,
 	}
 	flowSensors map[string]*FlowMeter = map[string]*FlowMeter{
-		"gr301":  &FlowMeterGR301,
-		"ux0151": &FlowMeterUX0151,
+		"fl-s401a": &FlowMeterFLS401A,
+		"gr-301":   &FlowMeterGR301,
+		"ux0151":   &FlowMeterUX0151,
 	}
 	dhtModels map[string]dhtlib.SensorType = map[string]dhtlib.SensorType{
 		"dht22": dhtlib.DHT22,
