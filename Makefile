@@ -13,7 +13,11 @@ build-local: format
 	go build -o kegerator -v *.go
 
 docker: format
-	docker build --network=host --tag ${TAG} -f Dockerfile .
+	docker buildx build \
+		--output=type=registry \
+		--platform linux/arm/v6,linux/arm/v7,linux/amd64 \
+		--tag ${TAG} \
+		-f Dockerfile .
 
 test:
 	gotest --race ./...
@@ -29,4 +33,4 @@ clean:
 get-tag:
 	echo ${BUILD}
 
-.PHONY: all build dev-build test format fmt clean get-tag
+.PHONY: all build build-local docker test format fmt clean get-tag
