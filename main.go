@@ -21,11 +21,13 @@ const (
 )
 
 var (
-	stateFile string
-	state     *State // storing state as main pkg var so /state can access it
+	noAutosave bool // prevent automatic saving of state to file
+	stateFile  string
+	state      *State // storing state as main pkg var so /state can access it
 )
 
 func main() {
+	flag.BoolVar(&noAutosave, "no-autosave", false, "Do not automatically save state")
 	flag.StringVar(&stateFile, "file", "state.json", "File to load initial state from")
 	flag.Parse()
 
@@ -61,7 +63,10 @@ func main() {
 
 	go func() {
 		saveTimer := time.NewTimer(defaultSaveInterval) // save state every 5 minutes
-		reload := make(chan os.Signal, 1)               // reload state from file on sighup
+		if noAutosave {
+			saveTimer.Stop()
+		}
+		reload := make(chan os.Signal, 1) // reload state from file on sighup
 		signal.Notify(reload, syscall.SIGHUP)
 
 		for {
@@ -98,7 +103,9 @@ func main() {
 				state.mu.Lock()
 				state = s
 				state.mu.Unlock()
-				saveTimer.Reset(defaultSaveInterval)
+				if !noAutosave {
+					saveTimer.Reset(defaultSaveInterval)
+				}
 			case <-stop:
 				// stop running kegs and dhts on exit
 				for _, keg := range state.kegs {
