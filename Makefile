@@ -8,6 +8,7 @@ all: test build
 
 build: format
 	docker buildx build -f Dockerfile -o type=local,dest=./bin .
+	docker stop buildx_buildkit_arm-builder0 && docker rm buildx_buildkit_arm-builder0
 
 build-local: format
 	go build -o kegerator -v *.go
@@ -18,6 +19,7 @@ docker: format
 		--platform linux/arm/v6,linux/arm/v7,linux/amd64 \
 		--tag ${TAG} \
 		-f Dockerfile .
+	docker stop buildx_buildkit_arm-builder0 && docker rm buildx_buildkit_arm-builder0
 
 test:
 	gotest --race ./...
