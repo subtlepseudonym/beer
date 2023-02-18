@@ -27,11 +27,11 @@ var (
 )
 
 type DHT struct {
-	model dht.SensorType
-	pin   int
+	model  dht.SensorType
+	pin    int
 	ticker *time.Ticker
-	mu    sync.Mutex
-	stop  chan struct{}
+	mu     sync.Mutex
+	stop   chan struct{}
 
 	Temperature float32
 	Humidity    float32
@@ -40,7 +40,7 @@ type DHT struct {
 
 func NewDHT(sensor dht.SensorType, interval time.Duration) *DHT {
 	return &DHT{
-		model: sensor,
+		model:  sensor,
 		ticker: time.NewTicker(interval),
 	}
 }
