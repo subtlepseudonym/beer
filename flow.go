@@ -213,5 +213,5 @@ func (f *Flow) update(event int64) {
 		strconv.Itoa(f.pinNumber),
 		f.keg.Type,
 		f.Contents,
-	).Add(f.RemainingVolume())
+	).Set(f.RemainingVolume())
 }
