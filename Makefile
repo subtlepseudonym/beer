@@ -7,7 +7,7 @@ default: all
 all: test build
 
 build: format
-	docker buildx build -f Dockerfile -o type=local,dest=./bin/kegerator .
+	docker buildx build -f Dockerfile -o type=local,dest=./bin .
 
 build-local: format
 	go build -o kegerator -v *.go
