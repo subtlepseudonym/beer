@@ -12,6 +12,7 @@ var (
 	PourVolume          *prometheus.CounterVec
 	HTTPRequestDuration *prometheus.CounterVec
 	DHTRetries          *prometheus.CounterVec
+	RemainingVolume     *prometheus.GaugeVec
 	DHTTemperature      *prometheus.GaugeVec
 	DHTHumidity         *prometheus.GaugeVec
 )
@@ -46,6 +47,15 @@ func buildMetrics() *prometheus.Registry {
 		[]string{"pin", "sensor"},
 	)
 
+	RemainingVolume = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "remaining_volume_liters",
+			Help:      "Volume of liquid remaining in a given keg",
+		},
+		[]string{"pin", "type", "contents"},
+	)
+
 	DHTTemperature = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -66,6 +76,7 @@ func buildMetrics() *prometheus.Registry {
 
 	metrics := []prometheus.Collector{
 		PourVolume,
+		RemainingVolume,
 		HTTPRequestDuration,
 		DHTTemperature,
 		DHTHumidity,

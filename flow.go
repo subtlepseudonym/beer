@@ -208,4 +208,10 @@ func (f *Flow) update(event int64) {
 		f.keg.Type,
 		f.Contents,
 	).Add(f.TotalFlow())
+
+	RemainingVolume.WithLabelValues(
+		strconv.Itoa(f.pinNumber),
+		f.keg.Type,
+		f.Contents,
+	).Add(f.RemainingVolume())
 }
