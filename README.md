@@ -4,6 +4,25 @@
 
 This project utilizes a raspberry pi zero w and a flow meter to monitor keg levels 
 
+### Running this project
+```bash
+docker create \
+	--name kegerator \
+	--publish 9220:9220 \
+	--device /dev/gpiomem \
+	--volume "/sys/class/gpio:/sys/class/gpio" \
+	--volume "/sys/devices/platform/soc/20200000.gpio/gpiochip0:/sys/devices/platform/soc/20200000.gpio/gpiochip0" \
+	--volume "path-to-directory-containing-state.json:/data" \
+	subtlepseudonym/kegerator:latest
+docker start kegerator
+```
+
+The path to `/sys/devices/platform/...` may be incorrect for your system. If this is the case, you can run the following to obtain the correct path:
+```bash
+echo 1 >> /sys/class/gpio/export
+ls -l /sys/class/gpio/gpio1
+```
+
 ### Dependency modifications
 This is a list of dependency modifications to help this project run a bit better. Relevant entries will be removed if the project moves to vendored dependencies.
 
