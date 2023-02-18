@@ -29,7 +29,7 @@ var (
 type DHT struct {
 	model dht.SensorType
 	pin   int
-	timer *time.Timer
+	ticker *time.Ticker
 	mu    sync.Mutex
 	stop  chan struct{}
 
@@ -41,7 +41,7 @@ type DHT struct {
 func NewDHT(sensor dht.SensorType, interval time.Duration) *DHT {
 	return &DHT{
 		model: sensor,
-		timer: time.NewTimer(interval),
+		ticker: time.NewTicker(interval),
 	}
 }
 
@@ -67,7 +67,7 @@ func (d *DHT) Attach(pin int) error {
 }
 
 func (d *DHT) Detach() error {
-	d.timer.Stop()
+	d.ticker.Stop()
 	return nil
 }
 
@@ -81,7 +81,7 @@ func (d *DHT) Start() {
 	go func() {
 		for {
 			select {
-			case <-d.timer.C:
+			case <-d.ticker.C:
 				temp, humid, retries, err := dht.ReadDHTxxWithContextAndRetry(
 					ctx,
 					d.model,
@@ -116,7 +116,7 @@ func (d *DHT) Stop() {
 		return
 	}
 	close(d.stop)
-	d.timer.Stop()
+	d.ticker.Stop()
 }
 
 func (d *DHT) Lock() {
