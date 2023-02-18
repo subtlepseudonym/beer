@@ -207,7 +207,7 @@ func (f *Flow) update(event int64) {
 		strconv.Itoa(f.pinNumber),
 		f.keg.Type,
 		f.Contents,
-	).Add(f.TotalFlow())
+	).Add(f.flowPerEvent)
 
 	RemainingVolume.WithLabelValues(
 		strconv.Itoa(f.pinNumber),
