@@ -56,10 +56,6 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	stop := make(chan struct{})
-	go func() {
-		<-interrupt
-		close(stop)
-	}()
 
 	go func() {
 		saveTicker := time.NewTicker(defaultSaveInterval) // save state every 5 minutes
@@ -106,7 +102,7 @@ func main() {
 				if !noAutosave {
 					saveTicker.Reset(defaultSaveInterval)
 				}
-			case <-stop:
+			case <-interrupt:
 				// stop running kegs and dhts on exit
 				for _, keg := range state.kegs {
 					keg.Stop()
@@ -114,6 +110,7 @@ func main() {
 				for _, dht := range state.dhts {
 					dht.Stop()
 				}
+				close(stop)
 				return
 			}
 		}
