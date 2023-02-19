@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/root/cache \
 	go build -ldflags="-extldflags=-static" -mod vendor -o /tmp/bin/kegerator -v *.go
 
 
-FROM busybox
+FROM scratch
 COPY --from=build /tmp/bin/kegerator /kegerator
 
 EXPOSE 9220/tcp
