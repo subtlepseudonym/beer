@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	defaultDeltaThreshold = time.Second // used to separate pour events
+	defaultDeltaThreshold     = time.Second // used to separate pour events
+	defaultPourEventThreshold = 4           // number of flow events to exceed to constitute a pour
 )
 
 type FlowMeter struct {
@@ -60,9 +61,12 @@ type Flow struct {
 }
 
 type Pour struct {
-	StartTime time.Time
-	Duration  time.Duration
-	Events    int64
+	prune  *time.Timer `json:"-"`
+	events int         `json:"-"`
+
+	StartTime time.Time     `json:"start_time"`
+	Duration  time.Duration `json:"duration"`
+	Volume    float64       `json:"volume"`
 }
 
 // NewFlow initializes a Flow struct given a flow constant (defined by the flow meter)
@@ -118,9 +122,7 @@ func (f *Flow) Start() {
 		for {
 			select {
 			case event := <-f.signalChan:
-				f.mu.Lock()
 				f.update(event)
-				f.mu.Unlock()
 			case <-f.stop:
 				return
 			}
@@ -180,6 +182,8 @@ func (f *Flow) Pin() int {
 // Flow rate formula provided is printed on the side of the Gredia flow meter:
 // F = 21Q; F is number of pulses; Q is liters / minute
 func (f *Flow) update(event int64) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	delta := time.Duration(event-f.latestEvent) * time.Microsecond
 
 	// TODO: make atomic / thread-safe
@@ -188,30 +192,59 @@ func (f *Flow) update(event int64) {
 
 	// Only update flow rate if there's an ongoing pour
 	if delta > f.deltaThreshold {
-		f.Pours = append(f.Pours, Pour{
-			StartTime: time.UnixMicro(event),
-			Events:    1,
+		idx := len(f.Pours)
+		prune := time.AfterFunc(f.deltaThreshold, func() {
+			f.mu.Lock()
+			defer f.mu.Unlock()
+
+			if idx >= len(f.Pours) {
+				fmt.Printf("WARN: prune index %d greater than highest pour index\n", idx)
+				return
+			} else if idx < 0 {
+				fmt.Printf("WARN: negative prune index: %d\n", idx)
+				return
+			}
+			f.eventTotal -= f.Pours[idx].events
+			f.Pours = append(f.Pours[:idx], f.Pours[idx+1:]...)
+
+			if len(f.Pours) == 0 {
+				f.latestEvent = 0
+			} else {
+				latestPour := f.Pours[idx]
+				f.latestEvent = latestPour.StartTime.Add(latestPour.Duration).UnixMicro()
+			}
 		})
-	} else {
-		idx := len(f.Pours) - 1
-		f.Pours[idx].Duration += delta
-		f.Pours[idx].Events += 1
+
+		f.Pours = append(f.Pours, Pour{
+			prune:     prune,
+			StartTime: time.UnixMicro(event),
+			Volume:    f.flowPerEvent,
+		})
+		return
 	}
 
-	f.firstRun.Do(func() {
-		f.eventTotal -= 1
-		f.Pours = f.Pours[1:]
-	})
+	idx := len(f.Pours) - 1
+	f.Pours[idx].Duration += delta
+	f.Pours[idx].Volume += f.flowPerEvent
 
-	PourVolume.WithLabelValues(
-		strconv.Itoa(f.pinNumber),
-		f.keg.Type,
-		f.Contents,
-	).Add(f.flowPerEvent)
+	pour := f.Pours[idx]
+	if pour.events < defaultPourEventThreshold {
+		pour.prune.Reset(f.deltaThreshold)
+	} else if pour.events == defaultPourEventThreshold {
+		// once pour threshold is reached, stop prune goroutine
+		pour.prune.Stop()
 
-	RemainingVolume.WithLabelValues(
-		strconv.Itoa(f.pinNumber),
-		f.keg.Type,
-		f.Contents,
-	).Set(f.RemainingVolume())
+		poured := float64(defaultPourEventThreshold) * f.flowPerEvent
+		PourVolume.WithLabelValues(
+			strconv.Itoa(f.pinNumber),
+			f.keg.Type,
+			f.Contents,
+		).Add(poured)
+	} else {
+		PourVolume.WithLabelValues(
+			strconv.Itoa(f.pinNumber),
+			f.keg.Type,
+			f.Contents,
+		).Add(f.flowPerEvent)
+	}
 }

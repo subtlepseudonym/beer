@@ -26,17 +26,12 @@ func (s *State) update() {
 	kegStates := make([]KegState, len(s.kegs))
 	for i, keg := range s.kegs {
 		keg.Lock()
-		pours := make([]float64, len(keg.Pours))
-		for i := range keg.Pours {
-			pours[i] = float64(keg.Pours[i].Events) * keg.flowPerEvent
-		}
 		kegState := KegState{
 			Keg:      keg.keg,
 			Contents: keg.Contents,
 			Sensor:   keg.Sensor(),
 			Pin:      keg.Pin(),
 			Poured:   keg.TotalFlow(),
-			Pours:    pours,
 		}
 		keg.Unlock()
 		kegStates[i] = kegState
@@ -65,7 +60,6 @@ type KegState struct {
 	Contents string     `json:"contents"`
 	Pin      int        `json:"pin"`
 	Poured   float64    `json:"poured"`
-	Pours    []float64  `json:"pours,omitempty"`
 }
 
 type DHTState struct {
