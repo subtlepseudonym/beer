@@ -23,6 +23,16 @@ echo 1 >> /sys/class/gpio/export
 ls -l /sys/class/gpio/gpio1
 ```
 
+### Known issues
+- Permissions for `/sys/class/gpio/gpioX` are not set correctly
+	- They should be `root:gpio`, but are `root:root`
+	- The workaround for this is included in the command above by mounting `/sys/devices/platform/...`
+- Flow meter pins are not correctly detached from
+	- For example, using pin 14, `/sys/class/gpio/gpio14` will persist after the container has been stopped
+	- Current workarounds:
+		- run outside of a docker container
+		- run `echo 14 >> /sys/class/gpio/unexport` after stopping the container
+
 ### Dependency modifications
 This is a list of dependency modifications to help this project run a bit better. Relevant entries will be removed if the project moves to vendored dependencies.
 
