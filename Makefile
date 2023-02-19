@@ -2,12 +2,14 @@ BINARY=kegerator
 BUILD=$$(vtag --no-meta)
 TAG="subtlepseudonym/${BINARY}:${BUILD}"
 
+PLATFORM?=linux/amd64
+
 default: all
 
 all: test build
 
 build: format
-	docker buildx build -f Dockerfile -o type=local,dest=./bin .
+	docker buildx build --platform ${PLATFORM} -f Dockerfile -o type=local,dest=./bin .
 	docker stop buildx_buildkit_arm-builder0 && docker rm buildx_buildkit_arm-builder0
 
 build-local: format
