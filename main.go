@@ -96,9 +96,10 @@ func main() {
 				}
 
 				// swap to new state
-				state.mu.Lock()
+				mu := state.mu
+				mu.Lock()
 				state = s
-				state.mu.Unlock()
+				mu.Unlock()
 				if !noAutosave {
 					saveTicker.Reset(defaultSaveInterval)
 				}

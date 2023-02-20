@@ -4,8 +4,9 @@
 - Use formatted output for Pour JSON fields
 
 ### Fixed
-- Fixed pour event counting
+- Pour event counting
 - Panic during pour pruning
+- Panic during state reload
 
 ## [0.3.0] - 2023-02-19
 ### Added
