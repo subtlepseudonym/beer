@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"sync"
@@ -39,6 +40,29 @@ var (
 	}
 )
 
+type Pour struct {
+	prune  *time.Timer `json:"-"`
+	events int         `json:"-"`
+
+	StartTime time.Time     `json:"start_time"`
+	Duration  time.Duration `json:"duration"`
+	Volume    float64       `json:"volume"`
+}
+
+func (p Pour) MarshalJSON() ([]byte, error) {
+	pour := struct {
+		Start    string  `json:"start"`
+		Duration string  `json:"duration"`
+		Volume   float64 `json:"volume"`
+	}{
+		Start:    p.StartTime.Format(time.RFC3339),
+		Duration: p.Duration.String(),
+		Volume:   p.Volume,
+	}
+
+	return json.Marshal(pour)
+}
+
 type Flow struct {
 	keg       *Keg
 	sensor    *FlowMeter
@@ -58,15 +82,6 @@ type Flow struct {
 
 	Pours    []Pour
 	Contents string
-}
-
-type Pour struct {
-	prune  *time.Timer `json:"-"`
-	events int         `json:"-"`
-
-	StartTime time.Time     `json:"start_time"`
-	Duration  time.Duration `json:"duration"`
-	Volume    float64       `json:"volume"`
 }
 
 // NewFlow initializes a Flow struct given a flow constant (defined by the flow meter)
