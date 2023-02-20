@@ -1,5 +1,12 @@
 # Changelog
-## [0.3.0]
+## [0.3.1]
+### Changed
+- Use formatted output for Pour JSON fields
+
+### Fixed
+- Fixed pour event counting
+
+## [0.3.0] - 2023-02-19
 ### Added
 - Multi-platform docker builds
 
