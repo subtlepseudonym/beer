@@ -56,11 +56,13 @@ func MetricsHandler(handler http.Handler) http.Handler {
 		now := time.Now()
 		state.mu.Lock()
 		for _, keg := range state.kegs {
+			keg.mu.Lock()
 			RemainingVolume.WithLabelValues(
 				strconv.Itoa(keg.Pin()),
 				keg.Keg().Type,
 				keg.Contents,
 			).Set(keg.RemainingVolume())
+			keg.mu.Unlock()
 		}
 		state.mu.Unlock()
 		handler.ServeHTTP(w, r)

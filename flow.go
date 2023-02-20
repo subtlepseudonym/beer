@@ -224,6 +224,7 @@ func (f *Flow) update(event int64) {
 	}
 
 	idx := len(f.Pours) - 1
+	f.Pours[idx].events += 1
 	f.Pours[idx].Duration += delta
 	f.Pours[idx].Volume += f.flowPerEvent
 
