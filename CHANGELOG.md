@@ -1,5 +1,5 @@
 # Changelog
-## [0.3.1]
+## [0.3.1] - 2023-02-20
 ### Changed
 - Use formatted output for Pour JSON fields
 - Truncate state file on save
