@@ -2,6 +2,7 @@
 ## [0.3.1]
 ### Changed
 - Use formatted output for Pour JSON fields
+- Truncate state file on save
 
 ### Fixed
 - Pour event counting

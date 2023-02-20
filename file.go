@@ -112,7 +112,7 @@ func SaveStateToFile(filename string, state *State) error {
 	state.mu.Lock()
 	state.update()
 
-	f, err := os.OpenFile(filename, os.O_RDWR, 0755)
+	f, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("open state file: %w", err)
 	}
