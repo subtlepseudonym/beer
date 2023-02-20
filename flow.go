@@ -225,7 +225,7 @@ func (f *Flow) update(event int64) {
 			if len(f.Pours) == 0 {
 				f.latestEvent = 0
 			} else {
-				latestPour := f.Pours[idx]
+				latestPour := f.Pours[idx-1]
 				f.latestEvent = latestPour.StartTime.Add(latestPour.Duration).UnixMicro()
 			}
 		})

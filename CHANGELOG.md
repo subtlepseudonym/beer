@@ -5,6 +5,7 @@
 
 ### Fixed
 - Fixed pour event counting
+- Panic during pour pruning
 
 ## [0.3.0] - 2023-02-19
 ### Added
