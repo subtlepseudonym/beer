@@ -19,7 +19,7 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(state)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("marshal state: %w", err)
+		fmt.Printf("marshal state: %s", err)
 		return
 	}
 	state.mu.Unlock()
@@ -42,7 +42,7 @@ func PourHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(pours)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("marshal state: %w", err)
+		fmt.Printf("marshal state: %s", err)
 		return
 	}
 }
