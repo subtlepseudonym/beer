@@ -14,6 +14,7 @@ const (
 	defaultDHTAttachRetries = 4
 	defaultDHTReadRetries   = 10
 	defaultDHTReadInterval  = 10 * time.Second
+	defaultTemperatureLimit = 100.0 // ignore temperature values over 100C
 )
 
 // These values are used for writing to and from file
@@ -91,6 +92,15 @@ func (d *DHT) Start() {
 				)
 				if err != nil {
 					fmt.Println("ERR:", err)
+					continue
+				}
+
+				if temp > defaultTemperatureLimit {
+					fmt.Printf(
+						"WARN: recorded temperature exceeds limit: %.2f > %.2f\n",
+						temp,
+						defaultTemperatureLimit,
+					)
 					continue
 				}
 
