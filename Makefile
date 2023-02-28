@@ -1,5 +1,5 @@
 BINARY=kegerator
-VERSION=$$(vtag)
+VERSION=v$$(vtag)
 BUILD=$$(vtag --no-meta)
 TAG="subtlepseudonym/${BINARY}:${BUILD}"
 

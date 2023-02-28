@@ -1,9 +1,10 @@
 # Changelog
-## [0.3.1] - 2023-02-20
-## Added
+## [0.3.2] - 2023-02-28
+### Added
 - Erroneous temperature detection
 - Version flag
 
+## [0.3.1] - 2023-02-20
 ### Changed
 - Use formatted output for Pour JSON fields
 - Truncate state file on save
