@@ -21,15 +21,23 @@ const (
 )
 
 var (
+	Version string = "0.0.1-unknown"
+
 	noAutosave bool // prevent automatic saving of state to file
 	stateFile  string
 	state      *State // storing state as main pkg var so /state can access it
 )
 
 func main() {
+	vFlag := flag.Bool("version", false, "Display version information")
 	flag.BoolVar(&noAutosave, "no-autosave", false, "Do not automatically save state")
 	flag.StringVar(&stateFile, "file", "state.json", "File to load initial state from")
 	flag.Parse()
+
+	if *vFlag {
+		fmt.Println("kegerator", Version)
+		return
+	}
 
 	// register metrics and prep gpio memory addresses before attaching sensors
 	registry := buildMetrics()

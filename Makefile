@@ -1,15 +1,20 @@
 BINARY=kegerator
+VERSION=$$(vtag)
 BUILD=$$(vtag --no-meta)
 TAG="subtlepseudonym/${BINARY}:${BUILD}"
 
-PLATFORM?=linux/amd64
+PLATFORM?=linux/arm/v6
 
 default: all
 
 all: test build
 
 build: format
-	docker buildx build --platform ${PLATFORM} -f Dockerfile -o type=local,dest=./bin .
+	docker buildx build \
+		--platform ${PLATFORM} \
+		--build-arg VERSION=${VERSION} \
+		-f Dockerfile \
+		-o type=local,dest=./bin .
 	docker stop buildx_buildkit_arm-builder0 && docker rm buildx_buildkit_arm-builder0
 
 build-local: format
@@ -19,6 +24,7 @@ docker: format
 	docker buildx build \
 		--output=type=registry \
 		--platform linux/arm/v6,linux/arm/v7,linux/amd64 \
+		--build-arg VERSION=${VERSION} \
 		--tag ${TAG} \
 		-f Dockerfile .
 	docker stop buildx_buildkit_arm-builder0 && docker rm buildx_buildkit_arm-builder0

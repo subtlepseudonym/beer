@@ -2,6 +2,7 @@
 ## [0.3.1] - 2023-02-20
 ## Added
 - Erroneous temperature detection
+- Version flag
 
 ### Changed
 - Use formatted output for Pour JSON fields

@@ -5,11 +5,12 @@ WORKDIR /src
 
 RUN apk add build-base
 
+ARG VERSION
 COPY . .
 RUN --mount=type=cache,target=/root/cache \
 	mkdir -p /tmp/bin && \
 	CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH \
-	go build -ldflags="-extldflags=-static" -mod vendor -o /tmp/bin/kegerator -v *.go
+	go build -ldflags="-X main.Version=$VERSION -extldflags=-static" -mod vendor -o /tmp/bin/kegerator -v *.go
 
 
 FROM scratch
