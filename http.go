@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 )
+
+const defaultPourLimit = 100
 
 func StateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -32,13 +34,29 @@ func PourHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	limit := defaultPourLimit
+	if r.FormValue("limit") != "" {
+		var err error
+		limit, err = strconv.Atoi(r.FormValue("limit"))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 	state.mu.Lock()
-	pours := make(map[string][]Pour, len(state.kegs))
+	var pours []Pour
 	for _, keg := range state.kegs {
-		key := fmt.Sprintf("%d_%s", keg.pinNumber, keg.Contents)
-		pours[key] = keg.Pours
+		pours = append(pours, keg.Pours...)
 	}
 	state.mu.Unlock()
+
+	sort.Slice(pours, func(i, j int) bool {
+		return pours[j].StartTime.After(pours[i].StartTime)
+	})
+	if len(pours) > limit {
+		pours = pours[:limit]
+	}
 
 	err := json.NewEncoder(w).Encode(pours)
 	if err != nil {

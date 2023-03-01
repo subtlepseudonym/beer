@@ -44,20 +44,23 @@ var (
 type Pour struct {
 	prune  *time.Timer `json:"-"`
 	events int         `json:"-"`
+	keg    string      `json:"keg"`
 
-	StartTime time.Time     `json:"start_time"`
+	StartTime time.Time     `json:"time"`
 	Duration  time.Duration `json:"duration"`
 	Volume    float64       `json:"volume"`
 }
 
 func (p Pour) MarshalJSON() ([]byte, error) {
 	pour := struct {
-		Start    string  `json:"start"`
-		Duration string  `json:"duration"`
+		Time     string  `json:"time"`
+		Keg      string  `json:"keg"`
+		Duration float64 `json:"duration"`
 		Volume   float64 `json:"volume"`
 	}{
-		Start:    p.StartTime.Format(time.RFC3339),
-		Duration: p.Duration.String(),
+		Time:     p.StartTime.Format(time.RFC3339),
+		Keg:      p.keg,
+		Duration: p.Duration.Seconds(),
 		Volume:   p.Volume,
 	}
 
@@ -233,6 +236,7 @@ func (f *Flow) update(event int64) {
 
 		f.Pours = append(f.Pours, Pour{
 			prune:     prune,
+			keg:       fmt.Sprintf("%d_%s", f.pinNumber, f.Contents),
 			StartTime: time.UnixMicro(event),
 			Volume:    f.flowPerEvent,
 		})
