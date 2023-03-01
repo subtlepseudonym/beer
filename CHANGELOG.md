@@ -1,4 +1,11 @@
 # Changelog
+## [0.4.0] -
+### Changed
+- /pours now returns a list of pours rather than a map
+
+### Fixed
+- Prevent DHT from exceeding temperature limit on startup
+
 ## [0.3.2] - 2023-02-28
 ### Added
 - Erroneous temperature detection
