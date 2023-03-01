@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -213,10 +214,10 @@ func (f *Flow) update(event int64) {
 			defer f.mu.Unlock()
 
 			if idx >= len(f.Pours) {
-				fmt.Printf("WARN: prune index %d greater than highest pour index\n", idx)
+				log.Printf("WARN: prune index %d greater than highest pour index\n", idx)
 				return
 			} else if idx < 0 {
-				fmt.Printf("WARN: negative prune index: %d\n", idx)
+				log.Printf("WARN: negative prune index: %d\n", idx)
 				return
 			}
 			f.eventTotal -= f.Pours[idx].events

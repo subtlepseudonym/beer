@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -95,12 +96,12 @@ func (d *DHT) Start() {
 					defaultDHTReadRetries,
 				)
 				if err != nil {
-					fmt.Println("ERR:", err)
+					log.Println("ERR:", err)
 					continue
 				}
 
 				if temp > defaultTemperatureLimit {
-					fmt.Printf(
+					log.Printf(
 						"WARN: recorded temperature exceeds limit: %.2f > %.2f\n",
 						temp,
 						defaultTemperatureLimit,

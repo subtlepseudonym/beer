@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -49,7 +50,7 @@ func main() {
 
 	state, err = LoadStateFromFile(stateFile)
 	if err != nil {
-		fmt.Println("ERR:", err)
+		log.Println("ERR:", err)
 		return
 	}
 
@@ -78,7 +79,7 @@ func main() {
 			case <-saveTicker.C:
 				err = SaveStateToFile(stateFile, state)
 				if err != nil {
-					fmt.Println("ERR: save state file:", err)
+					log.Println("ERR: save state file:", err)
 				}
 			case <-reload:
 				// stop existing state
@@ -93,7 +94,7 @@ func main() {
 				// load and start new state
 				s, err := LoadStateFromFile(stateFile)
 				if err != nil {
-					fmt.Println("ERR:", err)
+					log.Println("ERR:", err)
 					continue
 				}
 				for _, keg := range s.kegs {
@@ -141,7 +142,7 @@ func main() {
 		Addr:    defaultAddr,
 		Handler: mux,
 	}
-	fmt.Println("listening on", srv.Addr)
+	log.Println("listening on", srv.Addr)
 	go srv.ListenAndServe()
 	<-stop
 	srv.Shutdown(context.Background())

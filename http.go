@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -19,7 +20,7 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(state)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("marshal state: %s", err)
+		log.Printf("marshal state: %s", err)
 		return
 	}
 	state.mu.Unlock()
@@ -42,7 +43,7 @@ func PourHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(pours)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("marshal state: %s", err)
+		log.Printf("marshal state: %s", err)
 		return
 	}
 }
