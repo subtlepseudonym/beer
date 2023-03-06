@@ -2,6 +2,7 @@
 ## [0.4.0] -
 ### Changed
 - Return list of pours rather than map in /pours
+- Reset RemainingVolume prometheus metric on file reload
 
 ### Fixed
 - Prevent DHT from exceeding temperature limit on startup
