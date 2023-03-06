@@ -27,7 +27,7 @@ ls -l /sys/class/gpio/gpio1
 - Permissions for `/sys/class/gpio/gpioX` are not set correctly
 	- They should be `root:gpio`, but are `root:root`
 	- The workaround for this is included in the command above by mounting `/sys/devices/platform/...`
-- Flow meter pins are not correctly detached from
+- Flow meter pins are not correctly detached on shutdown
 	- For example, using pin 14, `/sys/class/gpio/gpio14` will persist after the container has been stopped
 	- Current workarounds:
 		- run outside of a docker container
@@ -41,3 +41,4 @@ This is a list of dependency modifications to help this project run a bit better
 	- gpio.h: uncommented sleep between /sys/class/gpio/export write and /sys/class/gpio/gpioX/direction write
 - udev rules on raspi
 	- SUBSYSTEM="gpio", ACTION="add", PROGRAM="/bin/sh -c 'chgrp -R gpio /sys%p && chmod -R 770 /sys%p'"
+	- This solves the permissions issue mentioned above when the binary is run natively
