@@ -238,7 +238,6 @@ func (f *Flow) update(event int64) {
 			prune:     prune,
 			keg:       fmt.Sprintf("%d_%s", f.pinNumber, f.Contents),
 			StartTime: time.UnixMicro(event),
-			Volume:    f.flowPerEvent,
 		})
 		return
 	}

@@ -6,6 +6,7 @@
 
 ### Fixed
 - Prevent DHT from exceeding temperature limit on startup
+- Avoid over-counting volume dispensed on new pour
 
 ## [0.3.2] - 2023-02-28
 ### Added
