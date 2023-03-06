@@ -1,7 +1,7 @@
 # Changelog
 ## [0.4.0] -
 ### Changed
-- /pours now returns a list of pours rather than a map
+- Return list of pours rather than map in /pours
 
 ### Fixed
 - Prevent DHT from exceeding temperature limit on startup

@@ -52,7 +52,7 @@ func PourHandler(w http.ResponseWriter, r *http.Request) {
 	state.mu.Unlock()
 
 	sort.Slice(pours, func(i, j int) bool {
-		return pours[j].StartTime.After(pours[i].StartTime)
+		return pours[i].StartTime.After(pours[j].StartTime)
 	})
 	if len(pours) > limit {
 		pours = pours[:limit]
