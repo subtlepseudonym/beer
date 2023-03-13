@@ -108,7 +108,9 @@ func main() {
 				mu := state.mu
 				mu.Lock()
 				state = s
-				RemainingVolume.Reset() // remove old keg data
+				// remove old keg data
+				PourVolume.Reset()
+				RemainingVolume.Reset()
 				mu.Unlock()
 				if !noAutosave {
 					saveTicker.Reset(defaultSaveInterval)
