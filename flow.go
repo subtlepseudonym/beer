@@ -29,6 +29,11 @@ var (
 		Model:        "fl-s401a",
 		FlowConstant: 98,
 	}
+	// gredia gr-r401
+	FlowMeterGRR401 = FlowMeter{
+		Model:        "gr-r401",
+		FlowConstant: 98,
+	}
 	// gredia gr-301
 	FlowMeterGR301 = FlowMeter{
 		Model:        "gr-301",
