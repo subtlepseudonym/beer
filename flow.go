@@ -241,6 +241,7 @@ func (f *Flow) update(event int64) {
 
 		f.Pours = append(f.Pours, Pour{
 			prune:     prune,
+			events:    1,
 			keg:       fmt.Sprintf("%d_%s", f.pinNumber, f.Contents),
 			StartTime: time.UnixMicro(event),
 		})
