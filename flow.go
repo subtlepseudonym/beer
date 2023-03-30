@@ -13,7 +13,7 @@ import (
 
 const (
 	defaultDeltaThreshold     = time.Second // used to separate pour events
-	defaultPourEventThreshold = 4           // number of flow events to exceed to constitute a pour
+	defaultPourEventThreshold = 10          // number of flow events to exceed to constitute a pour
 )
 
 type FlowMeter struct {
