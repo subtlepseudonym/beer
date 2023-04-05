@@ -102,7 +102,8 @@ func (d *DHT) Start() {
 
 				if temp > defaultTemperatureLimit {
 					log.Printf(
-						"WARN: recorded temperature exceeds limit: %.2f > %.2f\n",
+						"WARN: pin %d: recorded temperature exceeds limit: %.2f > %.2f\n",
+						d.pin,
 						temp,
 						defaultTemperatureLimit,
 					)
