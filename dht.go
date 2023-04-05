@@ -64,7 +64,7 @@ func (d *DHT) Attach(pin int) error {
 	DHTHumidity.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(humidity / 100.0))
 	DHTRetries.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Add(float64(retries))
 
-	if temperature > defaultTemperatureLimit {
+	if temperature < defaultTemperatureLimit {
 		d.Temperature = temperature
 		DHTTemperature.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(temperature))
 	}
