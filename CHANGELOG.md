@@ -1,5 +1,8 @@
 # Changelog
 ## [0.4.0] -
+### Added
+- REST endpoint for calibrating flow meters
+
 ### Changed
 - Return list of pours rather than map in /pours
 - Reset RemainingVolume prometheus metric on file reload
