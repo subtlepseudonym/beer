@@ -3,6 +3,7 @@
 ### Added
 - Endpoint for calibrating flow meters
 - Endpoint for refilling kegs
+- Binary for testing sensors
 
 ### Changed
 - Return list of pours rather than map in /pours

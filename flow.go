@@ -138,7 +138,7 @@ func (f *Flow) Detach() error {
 }
 
 // Start reads from the signal channel, updating metrics as each signal is processed
-func (f *Flow) Start() {
+func (f *Flow) Start(update func(int64)) {
 	if f.stop != nil {
 		return
 	}
@@ -148,7 +148,7 @@ func (f *Flow) Start() {
 		for {
 			select {
 			case event := <-f.signalChan:
-				f.update(event)
+				update(event)
 			case <-f.stop:
 				return
 			}
@@ -208,14 +208,14 @@ func (f *Flow) Pin() int {
 	return f.pinNumber
 }
 
-// update calculates the current flow rate and pour amount
+// Update calculates the current flow rate and pour amount
 //
 // Each pulse from the flow meter indicates a specific amount of flow. Flow rate
 // can be calculated by counting the number of pulses per unit time.
 //
 // Flow rate formula provided is printed on the side of the Gredia flow meter:
 // F = 21Q; F is number of pulses; Q is liters / minute
-func (f *Flow) update(event int64) {
+func (f *Flow) Update(event int64) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	delta := time.Duration(event-f.latestEvent) * time.Microsecond
@@ -283,4 +283,11 @@ func (f *Flow) update(event int64) {
 			f.Contents,
 		).Add(f.flowPerEvent)
 	}
+}
+
+// Count is used for testing and updates _only_ total event count
+func (f *Flow) Count(event int64) {
+	f.mu.Lock()
+	f.eventTotal += 1
+	f.mu.Unlock()
 }

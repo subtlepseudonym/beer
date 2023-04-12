@@ -57,10 +57,10 @@ func main() {
 	}
 
 	for _, keg := range keg.GlobalState.Kegs {
-		keg.Start()
+		keg.Start(keg.Update)
 	}
 	for _, dht := range keg.GlobalState.DHTs {
-		dht.Start()
+		dht.Start(dht.Update)
 	}
 
 	// stop any periodic processes on interrupt
@@ -100,10 +100,10 @@ func main() {
 					continue
 				}
 				for _, keg := range s.Kegs {
-					keg.Start()
+					keg.Start(keg.Update)
 				}
 				for _, dht := range s.DHTs {
-					dht.Start()
+					dht.Start(dht.Update)
 				}
 
 				// swap to new state
