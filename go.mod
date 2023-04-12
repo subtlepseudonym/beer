@@ -1,4 +1,4 @@
-module github.com/subtlepseudonym/beer
+module github.com/subtlepseudonym/kegerator
 
 go 1.20
 
