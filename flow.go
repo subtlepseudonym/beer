@@ -20,7 +20,7 @@ const (
 
 type FlowMeter struct {
 	Model        string  `json:"model"`
-	FlowConstant float64 `json:"flow_constant"`
+	FlowConstant float64 `json:"flow_constant"` // in 1/60L
 }
 
 // These values are here for reference, but are not actually used
@@ -81,7 +81,7 @@ type Flow struct {
 	pin       *gpio.Pin
 
 	deltaThreshold time.Duration
-	flowPerEvent   float64 // 1 / (flowConstant * 60 seconds)
+	flowPerEvent   float64 // 1 / (flowConstant * 60)
 
 	mu         sync.Mutex
 	signalChan chan int64
