@@ -138,6 +138,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", MetricsHandler(promHandler))
 	mux.HandleFunc("/calibrate", CalibrateHandler)
+	mux.HandleFunc("/refill", RefillHandler)
 	mux.HandleFunc("/pours", PourHandler)
 	mux.HandleFunc("/state", StateHandler)
 	mux.HandleFunc("/ok", okHandler)

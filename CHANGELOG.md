@@ -1,7 +1,8 @@
 # Changelog
 ## [0.4.0] -
 ### Added
-- REST endpoint for calibrating flow meters
+- Endpoint for calibrating flow meters
+- Endpoint for refilling kegs
 
 ### Changed
 - Return list of pours rather than map in /pours

@@ -171,6 +171,14 @@ func (f *Flow) Unlock() {
 	f.mu.Unlock()
 }
 
+// Refill resets state with a new contents value
+func (f *Flow) Refill(contents string) {
+	f.mu.Lock()
+	f.Contents = contents
+	f.eventTotal = 0
+	f.mu.Unlock()
+}
+
 // TotalFlow is a convenience method for determining the total volume of flow, in
 // liters, that have been measured
 func (f *Flow) TotalFlow() float64 {

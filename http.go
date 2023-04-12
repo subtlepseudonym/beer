@@ -30,6 +30,54 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	state.mu.Unlock()
 }
 
+func RefillHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var err error
+	var pin int
+	if r.FormValue("pin") != "" {
+		pin, err = strconv.Atoi(r.FormValue("pin"))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf(`{"msg": "bad pin value": "error": %q}`, err)))
+			return
+		}
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "pin query param required"}`))
+		return
+	}
+
+	var flow *Flow
+	state.mu.Lock()
+	for _, keg := range state.kegs {
+		if keg.pinNumber == pin {
+			flow = keg
+			break
+		}
+	}
+	state.mu.Unlock()
+	if flow == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{"error": "no keg found on pin %d"}`, pin)))
+		return
+	}
+
+	contents := flow.Contents
+	if r.FormValue("contents") != "" {
+		contents = r.FormValue("contents")
+	} else {
+		log.Printf("WARN: refilling %d with existing contents: %s", pin, contents)
+	}
+
+	state.mu.Lock()
+	flow.Refill(contents)
+	state.mu.Unlock()
+}
+
 func CalibrateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
