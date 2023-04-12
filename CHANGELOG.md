@@ -7,6 +7,7 @@
 ### Changed
 - Return list of pours rather than map in /pours
 - Reset RemainingVolume prometheus metric on file reload
+- Organized directory structure to enable multiple binaries
 
 ### Fixed
 - Prevent DHT from exceeding temperature limit on startup

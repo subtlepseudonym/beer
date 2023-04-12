@@ -1,4 +1,4 @@
-package main
+package kegerator
 
 type Keg struct {
 	Type   string  `json:"type"`

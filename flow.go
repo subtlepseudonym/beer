@@ -1,4 +1,4 @@
-package main
+package kegerator
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/subtlepseudonym/kegerator/prometheus"
 
 	"github.com/warthog618/gpio"
 )
@@ -269,13 +271,13 @@ func (f *Flow) update(event int64) {
 		pour.prune.Stop()
 
 		poured := float64(defaultPourEventThreshold) * f.flowPerEvent
-		PourVolume.WithLabelValues(
+		prometheus.PourVolume.WithLabelValues(
 			strconv.Itoa(f.pinNumber),
 			f.keg.Type,
 			f.Contents,
 		).Add(poured)
 	} else {
-		PourVolume.WithLabelValues(
+		prometheus.PourVolume.WithLabelValues(
 			strconv.Itoa(f.pinNumber),
 			f.keg.Type,
 			f.Contents,

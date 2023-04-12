@@ -1,4 +1,4 @@
-package main
+package prometheus
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,7 +17,7 @@ var (
 	DHTHumidity         *prometheus.GaugeVec
 )
 
-func buildMetrics() *prometheus.Registry {
+func BuildMetrics() *prometheus.Registry {
 	registry := prometheus.NewRegistry()
 
 	PourVolume = prometheus.NewCounterVec(

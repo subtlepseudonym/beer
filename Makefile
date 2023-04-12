@@ -18,7 +18,11 @@ build: format
 	docker stop buildx_buildkit_arm-builder0 && docker rm buildx_buildkit_arm-builder0
 
 build-local: format
-	go build -o kegerator -v *.go
+	mkdir -p bin
+	cd cmd && \
+	for dir in *; do \
+		go build -o "../bin/$$dir" "./$$dir"; \
+	done
 
 docker: format
 	docker buildx build \

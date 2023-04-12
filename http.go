@@ -1,4 +1,4 @@
-package main
+package kegerator
 
 import (
 	"encoding/json"
@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/subtlepseudonym/kegerator/prometheus"
 )
 
 const defaultPourLimit = 100
@@ -19,15 +21,15 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	state.mu.Lock()
-	state.update()
-	err := json.NewEncoder(w).Encode(state)
+	GlobalState.mu.Lock()
+	GlobalState.update()
+	err := json.NewEncoder(w).Encode(GlobalState)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("marshal state: %s", err)
 		return
 	}
-	state.mu.Unlock()
+	GlobalState.mu.Unlock()
 }
 
 func RefillHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,14 +54,14 @@ func RefillHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var flow *Flow
-	state.mu.Lock()
-	for _, keg := range state.kegs {
+	GlobalState.mu.Lock()
+	for _, keg := range GlobalState.Kegs {
 		if keg.pinNumber == pin {
 			flow = keg
 			break
 		}
 	}
-	state.mu.Unlock()
+	GlobalState.mu.Unlock()
 	if flow == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf(`{"error": "no keg found on pin %d"}`, pin)))
@@ -73,9 +75,9 @@ func RefillHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("WARN: refilling %d with existing contents: %s", pin, contents)
 	}
 
-	state.mu.Lock()
+	GlobalState.mu.Lock()
 	flow.Refill(contents)
-	state.mu.Unlock()
+	GlobalState.mu.Unlock()
 }
 
 func CalibrateHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,14 +102,14 @@ func CalibrateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var flow *Flow
-	state.mu.Lock()
-	for _, keg := range state.kegs {
+	GlobalState.mu.Lock()
+	for _, keg := range GlobalState.Kegs {
 		if keg.pinNumber == pin {
 			flow = keg
 			break
 		}
 	}
-	state.mu.Unlock()
+	GlobalState.mu.Unlock()
 	if flow == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf(`{"error": "no keg found on pin %d"}`, pin)))
@@ -142,10 +144,10 @@ func CalibrateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	state.mu.Lock()
+	GlobalState.mu.Lock()
 	flow.sensor.FlowConstant = constant
 	flow.flowPerEvent = 1.0 / (constant * 60.0)
-	state.mu.Unlock()
+	GlobalState.mu.Unlock()
 	w.WriteHeader(http.StatusAccepted)
 }
 
@@ -165,12 +167,12 @@ func PourHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	state.mu.Lock()
+	GlobalState.mu.Lock()
 	var pours []Pour
-	for _, keg := range state.kegs {
+	for _, keg := range GlobalState.Kegs {
 		pours = append(pours, keg.Pours...)
 	}
-	state.mu.Unlock()
+	GlobalState.mu.Unlock()
 
 	sort.Slice(pours, func(i, j int) bool {
 		return pours[i].StartTime.After(pours[j].StartTime)
@@ -187,25 +189,25 @@ func PourHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func okHandler(w http.ResponseWriter, r *http.Request) {
+func OKHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
 func MetricsHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
-		state.mu.Lock()
-		for _, keg := range state.kegs {
+		GlobalState.mu.Lock()
+		for _, keg := range GlobalState.Kegs {
 			keg.mu.Lock()
-			RemainingVolume.WithLabelValues(
+			prometheus.RemainingVolume.WithLabelValues(
 				strconv.Itoa(keg.Pin()),
 				keg.Keg().Type,
 				keg.Contents,
 			).Set(keg.RemainingVolume())
 			keg.mu.Unlock()
 		}
-		state.mu.Unlock()
+		GlobalState.mu.Unlock()
 		handler.ServeHTTP(w, r)
-		HTTPRequestDuration.WithLabelValues("/metrics").Add(time.Since(now).Seconds())
+		prometheus.HTTPRequestDuration.WithLabelValues("/metrics").Add(time.Since(now).Seconds())
 	})
 }

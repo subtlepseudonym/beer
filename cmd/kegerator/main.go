@@ -11,6 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	keg "github.com/subtlepseudonym/kegerator"
+	"github.com/subtlepseudonym/kegerator/prometheus"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/warthog618/gpio"
 )
@@ -26,7 +29,6 @@ var (
 
 	noAutosave bool // prevent automatic saving of state to file
 	stateFile  string
-	state      *State // storing state as main pkg var so /state can access it
 )
 
 func main() {
@@ -41,23 +43,23 @@ func main() {
 	}
 
 	// register metrics and prep gpio memory addresses before attaching sensors
-	registry := buildMetrics()
+	registry := prometheus.BuildMetrics()
 	err := gpio.Open()
 	if err != nil {
 		panic(err)
 	}
 	defer gpio.Close()
 
-	state, err = LoadStateFromFile(stateFile)
+	keg.GlobalState, err = keg.LoadStateFromFile(stateFile)
 	if err != nil {
 		log.Println("ERR:", err)
 		return
 	}
 
-	for _, keg := range state.kegs {
+	for _, keg := range keg.GlobalState.Kegs {
 		keg.Start()
 	}
-	for _, dht := range state.dhts {
+	for _, dht := range keg.GlobalState.DHTs {
 		dht.Start()
 	}
 
@@ -77,50 +79,50 @@ func main() {
 		for {
 			select {
 			case <-saveTicker.C:
-				err = SaveStateToFile(stateFile, state)
+				err = keg.SaveStateToFile(stateFile, keg.GlobalState)
 				if err != nil {
 					log.Println("ERR: save state file:", err)
 				}
 			case <-reload:
 				// stop existing state
 				saveTicker.Stop()
-				for _, keg := range state.kegs {
+				for _, keg := range keg.GlobalState.Kegs {
 					keg.Stop()
 				}
-				for _, dht := range state.dhts {
+				for _, dht := range keg.GlobalState.DHTs {
 					dht.Stop()
 				}
 
 				// load and start new state
-				s, err := LoadStateFromFile(stateFile)
+				s, err := keg.LoadStateFromFile(stateFile)
 				if err != nil {
 					log.Println("ERR:", err)
 					continue
 				}
-				for _, keg := range s.kegs {
+				for _, keg := range s.Kegs {
 					keg.Start()
 				}
-				for _, dht := range s.dhts {
+				for _, dht := range s.DHTs {
 					dht.Start()
 				}
 
 				// swap to new state
-				mu := state.mu
-				mu.Lock()
-				state = s
+				oldState := keg.GlobalState
+				oldState.Lock()
 				// remove old keg data
-				PourVolume.Reset()
-				RemainingVolume.Reset()
-				mu.Unlock()
+				prometheus.PourVolume.Reset()
+				prometheus.RemainingVolume.Reset()
+				keg.GlobalState = s
+				oldState.Unlock()
 				if !noAutosave {
 					saveTicker.Reset(defaultSaveInterval)
 				}
 			case <-interrupt:
 				// stop running kegs and dhts on exit
-				for _, keg := range state.kegs {
+				for _, keg := range keg.GlobalState.Kegs {
 					keg.Stop()
 				}
-				for _, dht := range state.dhts {
+				for _, dht := range keg.GlobalState.DHTs {
 					dht.Stop()
 				}
 				close(stop)
@@ -136,12 +138,12 @@ func main() {
 	promHandler := promhttp.HandlerFor(registry, promOpts)
 
 	mux := http.NewServeMux()
-	mux.Handle("/metrics", MetricsHandler(promHandler))
-	mux.HandleFunc("/calibrate", CalibrateHandler)
-	mux.HandleFunc("/refill", RefillHandler)
-	mux.HandleFunc("/pours", PourHandler)
-	mux.HandleFunc("/state", StateHandler)
-	mux.HandleFunc("/ok", okHandler)
+	mux.Handle("/metrics", keg.MetricsHandler(promHandler))
+	mux.HandleFunc("/calibrate", keg.CalibrateHandler)
+	mux.HandleFunc("/refill", keg.RefillHandler)
+	mux.HandleFunc("/pours", keg.PourHandler)
+	mux.HandleFunc("/state", keg.StateHandler)
+	mux.HandleFunc("/ok", keg.OKHandler)
 
 	srv := &http.Server{
 		Addr:    defaultAddr,

@@ -10,7 +10,14 @@ COPY . .
 RUN --mount=type=cache,target=/root/cache \
 	mkdir -p /tmp/bin && \
 	CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH \
-	go build -ldflags="-X main.Version=$VERSION -extldflags=-static" -mod vendor -o /tmp/bin/kegerator -v *.go
+	cd cmd && \
+	for dir in *; do \
+		go build -v \
+			-ldflags="-X main.Version=$VERSION -extldflags=-static" \
+			-mod vendor \
+			-o "/tmp/bin/$dir" \
+			"./$dir"; \
+	done
 
 
 FROM scratch

@@ -1,4 +1,4 @@
-package main
+package kegerator
 
 import (
 	"encoding/json"
@@ -8,25 +8,40 @@ import (
 	"sync"
 )
 
+// GlobalState holds all the keg and sensor state
+// This allows the main package as well as http endpoints to modify
+// sensor state
+//
+// FIXME: really ought to unexport this and write more methods to updating state
+var GlobalState *State
+
 // State maintains the current state of kegs and DHT sensors in the fridge
 // and is used for both saving state to file and writing state to a REST
 // endpoint
 type State struct {
 	mu   sync.Mutex `json:"-"`
-	kegs []*Flow    `json:"-"`
-	dhts []*DHT     `json:"-"`
+	Kegs []*Flow    `json:"-"`
+	DHTs []*DHT     `json:"-"`
 
-	Kegs []KegState `json:"kegs"`
-	DHTs []DHTState `json:"dhts"`
+	kegOut []kegOutput `json:"kegs"`
+	dhtOut []dhtOutput `json:"dhts"`
+}
+
+func (s *State) Lock() {
+	s.mu.Lock()
+}
+
+func (s *State) Unlock() {
+	s.mu.Unlock()
 }
 
 // Update ensures that the exported state fields represent the state's
 // internal representation
 func (s *State) update() {
-	kegStates := make([]KegState, len(s.kegs))
-	for i, keg := range s.kegs {
+	kegOutputs := make([]kegOutput, len(s.Kegs))
+	for i, keg := range s.Kegs {
 		keg.Lock()
-		kegState := KegState{
+		out := kegOutput{
 			Keg:      keg.keg,
 			Contents: keg.Contents,
 			Sensor:   keg.Sensor(),
@@ -34,27 +49,27 @@ func (s *State) update() {
 			Poured:   keg.TotalFlow(),
 		}
 		keg.Unlock()
-		kegStates[i] = kegState
+		kegOutputs[i] = out
 	}
 
-	dhtStates := make([]DHTState, len(s.dhts))
-	for i, dht := range s.dhts {
+	dhtOutputs := make([]dhtOutput, len(s.DHTs))
+	for i, dht := range s.DHTs {
 		dht.Lock()
-		dhtState := DHTState{
+		out := dhtOutput{
 			Model:       dht.Model(),
 			Pin:         dht.pin,
 			Temperature: dht.Temperature,
 			Humidity:    dht.Humidity,
 		}
 		dht.Unlock()
-		dhtStates[i] = dhtState
+		dhtOutputs[i] = out
 	}
 
-	s.Kegs = kegStates
-	s.DHTs = dhtStates
+	s.kegOut = kegOutputs
+	s.dhtOut = dhtOutputs
 }
 
-type KegState struct {
+type kegOutput struct {
 	Keg      *Keg       `json:"keg"`
 	Sensor   *FlowMeter `json:"sensor"`
 	Contents string     `json:"contents"`
@@ -62,7 +77,7 @@ type KegState struct {
 	Poured   float64    `json:"poured"`
 }
 
-type DHTState struct {
+type dhtOutput struct {
 	Model       string  `json:"model"`
 	Pin         int     `json:"pin"`
 	Temperature float32 `json:"temperature,omitempty"`
@@ -81,17 +96,17 @@ func LoadStateFromFile(filename string) (*State, error) {
 		return nil, fmt.Errorf("decode state file: %w", err)
 	}
 
-	for _, keg := range state.Kegs {
+	for _, keg := range state.kegOut {
 		flow := NewFlow(keg.Sensor, keg.Keg, keg.Contents)
 		flow.eventTotal = int(math.Ceil(keg.Poured / flow.flowPerEvent))
 		err = flow.Attach(uint8(keg.Pin % math.MaxUint8))
 		if err != nil {
 			return nil, fmt.Errorf("attach flow on pin %d: %s", keg.Pin, err)
 		}
-		state.kegs = append(state.kegs, flow)
+		state.Kegs = append(state.Kegs, flow)
 	}
 
-	for _, dht := range state.DHTs {
+	for _, dht := range state.dhtOut {
 		dhtModel, ok := dhtModels[dht.Model]
 		if !ok {
 			return nil, fmt.Errorf("invalid dht model %q", dht.Model)
@@ -102,7 +117,7 @@ func LoadStateFromFile(filename string) (*State, error) {
 		if err != nil {
 			return nil, fmt.Errorf("attach dht on pin %d: %s", dht.Pin, err)
 		}
-		state.dhts = append(state.dhts, dhtSensor)
+		state.DHTs = append(state.DHTs, dhtSensor)
 	}
 
 	return &state, nil

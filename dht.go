@@ -1,4 +1,4 @@
-package main
+package kegerator
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/subtlepseudonym/kegerator/prometheus"
 
 	"github.com/d2r2/go-dht"
 )
@@ -61,12 +63,12 @@ func (d *DHT) Attach(pin int) error {
 	d.pin = pin
 	d.Humidity = humidity
 	d.Retries = retries
-	DHTHumidity.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(humidity / 100.0))
-	DHTRetries.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Add(float64(retries))
+	prometheus.DHTHumidity.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(humidity / 100.0))
+	prometheus.DHTRetries.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Add(float64(retries))
 
 	if temperature < defaultTemperatureLimit {
 		d.Temperature = temperature
-		DHTTemperature.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(temperature))
+		prometheus.DHTTemperature.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(temperature))
 	}
 
 	return nil
@@ -115,9 +117,9 @@ func (d *DHT) Start() {
 				d.Humidity = humid
 				d.Retries = retries
 
-				DHTTemperature.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(temp))
-				DHTHumidity.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(humid / 100.0))
-				DHTRetries.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Add(float64(retries))
+				prometheus.DHTTemperature.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(temp))
+				prometheus.DHTHumidity.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Set(float64(humid / 100.0))
+				prometheus.DHTRetries.WithLabelValues(strconv.Itoa(d.pin), d.Model()).Add(float64(retries))
 				d.mu.Unlock()
 			case <-d.stop:
 				cancel()
