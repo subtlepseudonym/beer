@@ -71,9 +71,8 @@ func RefillHandler(w http.ResponseWriter, r *http.Request) {
 	contents := flow.Contents
 	if r.FormValue("contents") != "" {
 		contents = r.FormValue("contents")
-	} else {
-		log.Printf("WARN: refilling %d with existing contents: %s", pin, contents)
 	}
+	log.Printf("Refilling %d with contents: %s", pin, contents)
 
 	GlobalState.mu.Lock()
 	flow.Refill(contents)
