@@ -23,8 +23,8 @@ type State struct {
 	Kegs []*Flow    `json:"-"`
 	DHTs []*DHT     `json:"-"`
 
-	kegOut []kegOutput `json:"kegs"`
-	dhtOut []dhtOutput `json:"dhts"`
+	KegOut []kegOutput `json:"kegs"`
+	DHTOut []dhtOutput `json:"dhts"`
 }
 
 func (s *State) Lock() {
@@ -65,8 +65,8 @@ func (s *State) update() {
 		dhtOutputs[i] = out
 	}
 
-	s.kegOut = kegOutputs
-	s.dhtOut = dhtOutputs
+	s.KegOut = kegOutputs
+	s.DHTOut = dhtOutputs
 }
 
 type kegOutput struct {
@@ -91,12 +91,13 @@ func LoadStateFromFile(filename string) (*State, error) {
 		return nil, fmt.Errorf("open state file: %w", err)
 	}
 	defer f.Close()
+
 	err = json.NewDecoder(f).Decode(&state)
 	if err != nil {
 		return nil, fmt.Errorf("decode state file: %w", err)
 	}
 
-	for _, keg := range state.kegOut {
+	for _, keg := range state.KegOut {
 		flow := NewFlow(keg.Sensor, keg.Keg, keg.Contents)
 		flow.eventTotal = int(math.Ceil(keg.Poured / flow.flowPerEvent))
 		err = flow.Attach(uint8(keg.Pin % math.MaxUint8))
@@ -106,7 +107,7 @@ func LoadStateFromFile(filename string) (*State, error) {
 		state.Kegs = append(state.Kegs, flow)
 	}
 
-	for _, dht := range state.dhtOut {
+	for _, dht := range state.DHTOut {
 		dhtModel, ok := dhtModels[dht.Model]
 		if !ok {
 			return nil, fmt.Errorf("invalid dht model %q", dht.Model)
