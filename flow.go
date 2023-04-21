@@ -119,7 +119,7 @@ func (f *Flow) Attach(pin uint8) error {
 	f.pin.PullUp()
 
 	f.pin.Unwatch()
-	err := f.pin.Watch(gpio.EdgeRising, func(p *gpio.Pin) {
+	err := f.pin.Watch(gpio.EdgeFalling, func(p *gpio.Pin) {
 		now := time.Now()
 		f.signalChan <- now.UnixMicro()
 	})
