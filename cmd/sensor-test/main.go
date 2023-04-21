@@ -9,8 +9,10 @@ import (
 	"time"
 
 	keg "github.com/subtlepseudonym/kegerator"
+	"github.com/subtlepseudonym/kegerator/prometheus"
 
 	godht "github.com/d2r2/go-dht"
+	"github.com/warthog618/gpio"
 )
 
 const (
@@ -37,6 +39,14 @@ func main() {
 		fmt.Println("sensor-test", Version)
 		return
 	}
+
+	// register metrics and prep gpio memory addresses before attaching sensors
+	prometheus.BuildMetrics()
+	err := gpio.Open()
+	if err != nil {
+		panic(err)
+	}
+	defer gpio.Close()
 
 	// Exit gracefully
 	quit := make(chan os.Signal, 1)
