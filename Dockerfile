@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/root/cache \
 
 
 FROM scratch
-COPY --from=build /tmp/bin/kegerator /kegerator
+COPY --from=build /tmp/bin/* /
 
 EXPOSE 9220/tcp
 
