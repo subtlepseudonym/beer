@@ -1,5 +1,10 @@
 # Changelog
-## [0.4.0] -
+## [0.4.1] -
+### Fixed
+- Initialize gpio memory in sensor-test
+- Export human-readable state fields
+
+## [0.4.0] - 2023-04-12
 ### Added
 - Endpoint for calibrating flow meters
 - Endpoint for refilling kegs
