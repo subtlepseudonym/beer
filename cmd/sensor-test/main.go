@@ -12,7 +12,6 @@ import (
 	"github.com/subtlepseudonym/kegerator/prometheus"
 
 	godht "github.com/d2r2/go-dht"
-	"github.com/warthog618/gpio"
 )
 
 const (
@@ -40,13 +39,7 @@ func main() {
 		return
 	}
 
-	// register metrics and prep gpio memory addresses before attaching sensors
 	prometheus.BuildMetrics()
-	err := gpio.Open()
-	if err != nil {
-		panic(err)
-	}
-	defer gpio.Close()
 
 	// Exit gracefully
 	quit := make(chan os.Signal, 1)

@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/d2r2/go-dht v0.0.0-20200119175940-4ba96621a218
 	github.com/prometheus/client_golang v1.14.0
-	github.com/warthog618/gpio v0.3.0
+	github.com/warthog618/gpiod v0.8.1
 )
 
 require (
@@ -19,6 +19,6 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.3.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

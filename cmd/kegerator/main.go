@@ -15,7 +15,6 @@ import (
 	"github.com/subtlepseudonym/kegerator/prometheus"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/warthog618/gpio"
 )
 
 const (
@@ -42,14 +41,8 @@ func main() {
 		return
 	}
 
-	// register metrics and prep gpio memory addresses before attaching sensors
+	var err error
 	registry := prometheus.BuildMetrics()
-	err := gpio.Open()
-	if err != nil {
-		panic(err)
-	}
-	defer gpio.Close()
-
 	keg.GlobalState, err = keg.LoadStateFromFile(stateFile)
 	if err != nil {
 		log.Println("ERR:", err)

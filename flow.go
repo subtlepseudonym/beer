@@ -10,10 +10,11 @@ import (
 
 	"github.com/subtlepseudonym/kegerator/prometheus"
 
-	"github.com/warthog618/gpio"
+	"github.com/warthog618/gpiod"
 )
 
 const (
+	defaultGPIOChip           = "gpiochip0" // gpio chip device name
 	defaultDeltaThreshold     = time.Second // used to separate pour events
 	defaultPourEventThreshold = 10          // number of flow events to exceed to constitute a pour
 )
@@ -78,7 +79,7 @@ type Flow struct {
 	keg       *Keg
 	sensor    *FlowMeter
 	pinNumber int
-	pin       *gpio.Pin
+	line      *gpiod.Line
 
 	deltaThreshold time.Duration
 	flowPerEvent   float64 // 1 / (flowConstant * 60)
@@ -114,17 +115,19 @@ func NewFlow(flowMeter *FlowMeter, keg *Keg, contents string) *Flow {
 // input and begins watching it for events
 func (f *Flow) Attach(pin uint8) error {
 	f.pinNumber = int(pin)
-	f.pin = gpio.NewPin(pin)
-	f.pin.Input()
-	f.pin.PullUp()
-
-	f.pin.Unwatch()
-	err := f.pin.Watch(gpio.EdgeFalling, func(p *gpio.Pin) {
-		now := time.Now()
-		f.signalChan <- now.UnixMicro()
-	})
+	var err error
+	f.line, err = gpiod.RequestLine(
+		defaultGPIOChip,
+		f.pinNumber,
+		gpiod.WithPullUp,
+		gpiod.AsInput,
+		gpiod.WithEventHandler(func(evt gpiod.LineEvent) {
+			f.signalChan <- time.Now().UnixMicro()
+		}),
+		gpiod.WithFallingEdge,
+	)
 	if err != nil {
-		return fmt.Errorf("watch pin %d failed: %w", pin, err)
+		return fmt.Errorf("request pin %d failed: %w", pin, err)
 	}
 
 	return nil
@@ -133,7 +136,7 @@ func (f *Flow) Attach(pin uint8) error {
 // Detach releases the memory range held by the gpio package and stops watching
 // the signal pin specified by a previous call to attach()
 func (f *Flow) Detach() error {
-	f.pin.Unwatch()
+	f.line.Close()
 	return nil
 }
 
@@ -162,7 +165,7 @@ func (f *Flow) Stop() {
 		return
 	}
 	close(f.stop)
-	f.pin.Unwatch()
+	f.Detach()
 }
 
 func (f *Flow) Lock() {
