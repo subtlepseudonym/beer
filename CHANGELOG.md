@@ -1,5 +1,8 @@
 # Changelog
 ## [0.4.1] -
+### Changed
+- Use warthog618/gpiod over warthog618/gpio
+
 ### Fixed
 - Initialize gpio memory in sensor-test
 - Export human-readable state fields
